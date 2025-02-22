@@ -1,0 +1,33 @@
+# IDE files
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.*
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Other
+*.swp
+*.swo

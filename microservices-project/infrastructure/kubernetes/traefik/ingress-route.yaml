@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+    name: api-gateway
+    namespace: default
+spec:
+    entryPoints:
+        - web
+    routes:
+        - match: PathPrefix(`/api/users`)
+          kind: Rule
+          services:
+              - name: user-service
+                port: 80
+          middlewares:
+              - name: basic-auth
+        - match: PathPrefix(`/api/health`)
+          kind: Rule
+          services:
+              - name: user-service
+                port: 80

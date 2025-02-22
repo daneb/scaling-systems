@@ -1,0 +1,112 @@
+# infrastructure/kubernetes/traefik/traefik-config.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: traefik
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: traefik
+rules:
+    - apiGroups: [""]
+      resources: ["services", "endpoints", "secrets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["extensions", "networking.k8s.io"]
+      resources: ["ingresses", "ingressclasses"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["extensions", "networking.k8s.io"]
+      resources: ["ingresses/status"]
+      verbs: ["update"]
+    # Expanded Traefik CRD permissions
+    - apiGroups:
+          - "traefik.containo.us"
+          - "traefik.io"
+      resources:
+          - "ingressroutes"
+          - "ingressroutetcps"
+          - "ingressrouteudps"
+          - "middlewares"
+          - "middlewaretcps" # Added
+          - "middlewareudps" # Added
+          - "tlsoptions"
+          - "tlsstores"
+          - "traefikservices" # Added
+          - "serverstransports"
+      verbs: ["get", "list", "watch"]
+---
+# Rest of the configuration remains the same
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: traefik
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: traefik
+subjects:
+    - kind: ServiceAccount
+      name: traefik
+      namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: traefik
+    namespace: kube-system
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: traefik
+    template:
+        metadata:
+            labels:
+                app: traefik
+        spec:
+            serviceAccountName: traefik
+            automountServiceAccountToken: true
+            containers:
+                - name: traefik
+                  image: traefik:v2.10
+                  args:
+                      - --api.dashboard=true
+                      - --providers.kubernetesingress
+                      - --providers.kubernetescrd
+                      - --log.level=DEBUG
+                      - --entrypoints.web.address=:80
+                  ports:
+                      - name: http
+                        containerPort: 80
+                      - name: https
+                        containerPort: 443
+                      - name: dashboard
+                        containerPort: 8080
+                  resources:
+                      requests:
+                          cpu: "100m"
+                          memory: "50Mi"
+                      limits:
+                          cpu: "300m"
+                          memory: "150Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: traefik
+    namespace: kube-system
+spec:
+    type: LoadBalancer
+    ports:
+        - port: 80
+          name: http
+          targetPort: http
+        - port: 443
+          name: https
+          targetPort: https
+        - port: 8080
+          name: dashboard
+          targetPort: dashboard
+    selector:
+        app: traefik
