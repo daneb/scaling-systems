@@ -1,0 +1,24 @@
+graph TD
+    subgraph "Minikube Cluster"
+        TR[Traefik Ingress Controller\nport:80] --> |/api/users, /api/health| SVC
+
+        subgraph "Services"
+            SVC[user-service Service\nClusterIP\nport:80 → targetPort:3000]
+        end
+
+        SVC --> POD[user-service Pod\nport:3000\nhealth endpoint: /health]
+
+        subgraph "MongoDB"
+            SVC_MONGO[mongodb Service\nClusterIP]
+            SVC_MONGO --> MONGO[MongoDB Pod]
+        end
+
+        POD --> SVC_MONGO
+    end
+
+    EXT[External Access\nminikube ip] --> |http://MINIKUBE_IP| TR
+
+    style POD fill:#f9f,stroke:#333,stroke-width:2px
+    style SVC fill:#bbf,stroke:#333,stroke-width:2px
+    style TR fill:#bfb,stroke:#333,stroke-width:2px
+    style EXT fill:#fbb,stroke:#333,stroke-width:2px

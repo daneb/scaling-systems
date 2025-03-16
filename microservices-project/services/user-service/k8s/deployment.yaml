@@ -1,26 +1,48 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-service
-  labels:
-    app: user-service
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: user-service
-  template:
-    metadata:
-      labels:
+    name: user-service
+    labels:
         app: user-service
-    spec:
-      containers:
-      - name: user-service
-        image: user-service:1.0.3
-        ports:
-        - containerPort: 3000
-        env:
-        - name: PORT
-          value: "3000"
-        - name: MONGODB_URI
-          value: "mongodb://mongodb:27017/users"
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: user-service
+    template:
+        metadata:
+            labels:
+                app: user-service
+        spec:
+            initContainers:
+                - name: wait-for-mongodb
+                  image: busybox
+                  command:
+                      [
+                          "sh",
+                          "-c",
+                          "until nc -z mongodb 27017; do echo waiting for mongodb; sleep 2; done;",
+                      ]
+            containers:
+                - name: user-service
+                  image: user-service:1.0.8
+                  imagePullPolicy: Never
+                  ports:
+                      - containerPort: 3000
+                  env:
+                      - name: PORT
+                        value: "3000"
+                      - name: MONGODB_URI
+                        value: "mongodb://mongodb:27017/users"
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: 3000
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /health
+                          port: 3000
+                      initialDelaySeconds: 15
+                      periodSeconds: 20

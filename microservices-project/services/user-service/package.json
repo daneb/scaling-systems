@@ -1,6 +1,6 @@
 {
     "name": "user-service",
-    "version": "1.0.3",
+    "version": "1.0.8",
     "description": "User management microservice",
     "main": "src/index.js",
     "scripts": {
