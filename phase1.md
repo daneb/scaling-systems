@@ -21,6 +21,7 @@
 - [ ] API Gateway (In Progress)
   - [x] Traefik installation
   - [ ] Traefik routing configuration
+       # TODO: Stuck here. User API is not returning users but HEALTH is working
   - [ ] Basic auth setup
   - [ ] Verify with curl commands
 - [ ] Basic Services

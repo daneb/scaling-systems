@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
 const healthCheck = require("./middleware/healthCheck");
 
 console.log(healthCheck);
@@ -15,12 +16,40 @@ app.use(cors());
 app.use(express.json());
 app.use(healthCheck);
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+
+// API root endpoint
+app.get("/api", (req, res) => {
+    res.status(200).json({ 
+        message: "User Service API",
+        endpoints: ["/api/users", "/api/auth", "/health"],
+        version: "1.0.0"
+    });
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
+    console.log("Health check endpoint hit");
     res.status(200).json({ status: "ok" });
+});
+
+// Catch-all route for debugging
+app.use('*', (req, res) => {
+    console.log(`404 - Not Found: ${req.originalUrl}`);
+    res.status(404).json({ 
+        error: "Not Found", 
+        path: req.originalUrl,
+        method: req.method,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Connect to MongoDB

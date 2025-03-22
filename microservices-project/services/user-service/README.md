@@ -97,3 +97,42 @@ kubectl get service traefik
 # Then in another terminal:
 curl -H "Host: user-service.local" http://10.110.3.59/health
 ```
+
+## Access Mongo
+```sh
+kubectl port-forward svc/mongodb 27017:27017
+```
+
+Use Compass to connect to the MongoDB instance running in the cluster.
+
+## Access Users
+
+Send a POST request to /api/auth/register with the user data:
+```json
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123"
+}
+```
+
+Send a POST request to /api/auth/login with credentials:
+```json
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+```
+
+Send a GET request to /api/users to retrieve all users:
+```json
+{
+  "id": "123",
+  "username": "testuser",
+  "email": "test@example.com"
+}
+```
+
+## LAST KNOWN ISSUE:
+Cannot access services outside cluster on local host (ubuntu).
+Works if I run it locally. /health works but not /api/users or /api/auth

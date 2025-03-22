@@ -1,0 +1,23 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: user-service-route
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/api/users`)
+      kind: Rule
+      services:
+        - name: user-service
+          port: 3000
+    - match: PathPrefix(`/api/auth`)
+      kind: Rule
+      services:
+        - name: user-service
+          port: 3000
+    - match: PathPrefix(`/api/health`)
+      kind: Rule
+      services:
+        - name: user-service
+          port: 3000
